@@ -1,108 +1,171 @@
-# UTS Praktikum Pembelajaran Mesin - Soal C
+UTS Praktikum Pembelajaran Mesin - Soal C
+Repository ini berisi implementasi Decision Tree pada dataset Online Shoppers Purchasing Intention dengan penanganan imbalanced data menggunakan metode SMOTENC dan RandomUnderSampler.
 
-Repository ini memuat proyek persiapan untuk Soal C dengan target analisis `Revenue` pada dataset **Online Shoppers Purchasing Intention**.
 
-## Tahap 1: Analisis Dataset Awal
+1. Dataset
+Dataset yang digunakan adalah online_shoppers_intention.csv dengan target klasifikasi Revenue.
+- Jumlah data awal: 12.330 baris
+- Jumlah kolom: 18
+- Missing value: 0
+- Duplikat: 125 baris
+- Data setelah penghapusan duplikat: 12.205 baris
+- Kelas target:
+  - False : 10.422 data (84,53%)
+  - True : 1.908 data (15,47%)
+Distribusi tersebut menunjukkan adanya ketidakseimbangan kelas sehingga digunakan metode resampling pada data training.
 
-Berikut merupakan hasil eksplorasi data dasar menggunakan Pandas:
 
-### 1. Status Ketersediaan Dataset
-Dataset telah berhasil diunduh dan ditempatkan di `dataset/online_shoppers_intention.csv`.
+2. Struktur Repository
+uts_ml/
+├── dataset/
+│   └── online_shoppers_intention.csv
+│
+├── konteks/
+│   └── Soal UTS Prakt ML.pdf
+│
+├── outputs/
+│   ├── figures/
+│   │   ├── cm_dt_rus.png
+│   │   ├── cm_dt_smotenc.png
+│   │   ├── dist_after_rus.png
+│   │   ├── dist_after_smotenc.png
+│   │   ├── dist_before_resampling.png
+│   │   └── perbandingan_metrik.png
+│   │
+│   └── tables/
+│       └── evaluasi_model.csv
+│
+├── src/
+│   ├── main.py
+│   ├── data_preprocessing.py
+│   ├── data_transformation.py
+│   ├── imbalanced_data.py
+│   ├── decision_tree.py
+│   └── evaluation.py
+│
+├── requirements.txt
+└── README.md
 
-### 2. Struktur dan Karakteristik Dataset
-- **Jumlah Baris:** 12,330
-- **Jumlah Kolom:** 18
-- **Tipe Data:**
-  - Numerik (14): `Administrative`, `Administrative_Duration`, `Informational`, `Informational_Duration`, `ProductRelated`, `ProductRelated_Duration`, `BounceRates`, `ExitRates`, `PageValues`, `SpecialDay`, `OperatingSystems`, `Browser`, `Region`, `TrafficType`
-  - Kategorikal/Boolean (4): `Month`, `VisitorType`, `Weekend`, `Revenue` (Target)
 
-### 3. Distribusi Kelas (Target: Revenue)
-- **False (Tidak Membeli):** 10,422 baris (84.53%)
-- **True (Membeli):** 1,908 baris (15.47%)
-- **Imbalance Ratio:** ~1:5.46. Dataset **sangat imbalanced**, memenuhi syarat Soal C.
+3. Pembagian Modul Program
+File	Fungsi
+data_preprocessing.py	Load data, pemeriksaan missing value, duplikat, deteksi outlier, serta pemisahan fitur dan target
+data_transformation.py	Transformasi fitur numerik menggunakan StandardScaler dan fitur kategorikal menggunakan OneHotEncoder
+imbalanced_data.py	Menangani ketidakseimbangan kelas menggunakan SMOTENC dan RandomUnderSampler
+decision_tree.py	Membuat model DecisionTreeClassifier
+evaluation.py	Menghitung metrik evaluasi dan membuat grafik
+main.py	Mengatur dan menjalankan seluruh alur program
 
-### 4. Pemeriksaan Kualitas Data
-- **Missing Values:** 0 (Tidak ada data yang kosong).
-- **Duplikat:** 125 baris duplikat ditemukan. Perlu di-drop saat preprocessing.
-- **Outliers:** Terdeteksi cukup banyak data yang melebihi batas IQR (misal: 4369 outliers di kolom Browser, 2730 di PageValues, dsb). Penanganan spesifik (seperti clipping atau metode robust scaling) bisa didiskusikan pada tahap preprocessing jika model Decision Tree memerlukannya (meski Decision Tree secara teori tahan terhadap outlier).
 
-### 5. Status Keunikan Dataset berdasarkan SPS
-Dokumen SPS tidak ditemukan di workspace, sehingga keunikan dataset terhadap kelompok lain tidak dapat dipastikan dari sisi repositori. Pastikan secara manual tidak ada bentrok.
+4. Alur Program
+Program mengikuti alur pada soal UTS:
+Input Data
+    ↓
+Preprocessing
+    ↓
+Split Data 80:20
+    ↓
+ ┌───────────────┐
+ │               │
+Training       Testing
+ │               │
+Resampling    Transformation
+ │               │
+Transformation   │
+ │               │
+Decision Tree    │
+ │               │
+Testing ←────────┘
+    ↓
+Evaluasi
 
-### 6. Kelayakan Dataset
-**LAYAK**. Dataset memiliki klasifikasi biner, kelas target yang imbalanced, dan fitur yang cukup kaya (numerik dan kategorikal) untuk diolah menggunakan metode yang disyaratkan.
+Resampling hanya dilakukan pada data training, sedangkan data testing tetap digunakan dalam kondisi aslinya untuk evaluasi.
+Tahapan
 
-### 7. Rekomendasi Metode
-- **Transformation:** `StandardScaler` (hanya di-fit pada data training) untuk kolom numerik, serta OHE/Label Encoding untuk kolom kategorikal.
-- **Resampling (Khusus Training):**
-  - Oversampling: `SMOTENC` (karena data campuran numerik & kategorikal).
-  - Undersampling: `RandomUnderSampler`.
+1. Input
+   Membaca dataset online_shoppers_intention.csv.
 
-### 8. Alur Tahap Berikutnya (Tahap 2)
-Membuat skrip preprocessing untuk menghapus duplikat, encoding kategorikal, splitting (80/20), serta transformasi (scaling & resampling) sebelum masuk ke pemodelan Decision Tree.
+2. Preprocessing
+   - Memeriksa missing value.
+   - Menghapus data duplikat.
+   - Mendeteksi outlier menggunakan metode IQR.
+   - Outlier tidak dihapus karena Decision Tree relatif tidak sensitif terhadap nilai ekstrem.
 
----
-*Tabel lengkap ringkasan analisis per kolom dapat dilihat di `outputs/tables/analisis_dataset.csv`.*
+3. Split Data
+   Data dibagi menjadi:
+   - 80% training: 9.764 data
+   - 20% testing: 2.441 data
+   Pembagian dilakukan menggunakan stratifikasi berdasarkan target Revenue.
 
-## Tahap 2: Implementasi Pipeline & Model
+4. Resampling
+   Dua metode dibandingkan pada data training:
+   - SMOTENC untuk oversampling.
+   - RandomUnderSampler untuk undersampling.
 
-Pada tahap ini, program pipeline pemrosesan data dan pemodelan Decision Tree telah diimplementasikan ke dalam kode Python (berada di dalam folder `src/`).
+5. Transformation
+   - Fitur numerik → StandardScaler
+   - Fitur kategorikal → OneHotEncoder
+   Transformer di-fit menggunakan data training dan kemudian digunakan untuk mentransformasi data testing.
 
-### Struktur Kode
-- `src/preprocessing.py`: Menangani pembersihan data (hapus duplikat), deteksi missing values & outlier (dengan IQR), serta memisahkan Target & Fitur.
-- `src/transformation.py`: Menyusun `ColumnTransformer` (menggunakan `StandardScaler` untuk kolom numerik & `OneHotEncoder` untuk kategorikal).
-- `src/resampling.py`: (Tergabung di dalam Main Pipeline menggunakan `imblearn`) Menentukan skema sampling.
-- `src/evaluation.py`: Menghitung confusion matrix, accuracy, precision, recall, F1, serta mencetak grafik.
-- `src/main.py`: Skrip utama yang menggabungkan seluruh proses menggunakan `imblearn.pipeline.Pipeline`.
+6. Training
+   Data hasil resampling dan transformasi digunakan untuk melatih Decision Tree.
 
-### Metode & Alasan Pemilihan:
-- **Missing Value**: Tidak ditemukan, aman.
-- **Duplikasi**: 125 baris yang terdeteksi identik telah di-drop sebelum splitting untuk mencegah *data leakage*.
-- **Outlier**: Tetap dipertahankan. Algoritma Decision Tree *robust* (kebal) terhadap nilai *outlier*.
-- **Data Splitting**: 80% Training (9764 baris), 20% Testing (2441 baris) dengan parameter `stratify=y`.
-- **Oversampling (SMOTENC)**: SMOTENC (SMOTE for Nominal and Continuous) dipilih sebagai eksperimen pertama dibandingkan SMOTE biasa, karena fitur kita memiliki gabungan kategorikal dan numerikal.
-- **Undersampling (RandomUnderSampler)**: Eksperimen kedua untuk mengurangi kelas mayoritas sehingga seimbang dengan kelas minoritas.
+7. Testing
+   Model digunakan untuk memprediksi X_test yang tidak mengalami resampling.
 
-### Hasil Pengujian Decision Tree
-| Eksperimen | Akurasi | Presisi (True) | Recall (True) | F1-Score | Distribusi Kelas (Train) |
-| --- | --- | --- | --- | --- | --- |
-| **DT + SMOTENC** | 86.89% | 56.20% | 73.56% | 63.72% | False: 8238, True: 8238 |
-| **DT + RandomUnderSampler** | 83.61% | 48.59% | 81.41% | 60.86% | False: 1526, True: 1526 |
+8. Evaluasi
+   Performa model dievaluasi menggunakan:
+   - Confusion Matrix
+   - Accuracy
+   - Precision
+   - Recall
+   - F1-Score
 
-*Grafik lengkap dan tabel evaluasi telah disimpan di dalam `outputs/figures/` dan `outputs/tables/`.*
+5. Hasil Eksperimen
+Decision Tree + SMOTENC
+Distribusi training setelah SMOTENC:
+False : 8238
+True  : 8238
 
-## Tahap 3: Audit dan Verifikasi Metodologi
+Hasil evaluasi:
+Metrik	Nilai
+Accuracy	86,89%
+Precision	56,20%
+Recall	73,56%
+F1-Score	63,72%
 
-Pada tahap ini dilakukan audit secara menyeluruh terhadap hasil eksekusi program di Tahap 2 untuk mendeteksi adanya *data leakage* atau inkonsistensi metrik.
 
-### 1. Checklist Audit Metodologi
-- [x] Dataset dibersihkan dari duplikat sebelum displit.
-- [x] Outlier tidak dihapus secara paksa yang merugikan.
-- [x] Splitting dilakukan dengan proporsi 80:20 (stratifikasi `y`).
-- [x] Standard Scaler dan Encoder HANYA di-*fit* pada data training melalui `imblearn.pipeline`.
-- [x] SMOTENC dijalankan sebelum fitur kategori dikodekan ke representasi numerik.
-- [x] RandomUnderSampler memakai data training yang sama.
-- [x] Resampling HANYA dilakukan pada `X_train`, sama sekali tidak menyentuh `X_test`.
-- [x] Evaluasi performa dihitung berdasarkan data testing asli yang tidak tersentuh (2441 sampel).
+Confusion Matrix:
+[[1840  219]
+ [ 101  281]]
 
-### 2. Temuan dan Koreksi
-Berdasarkan pengecekan ulang kode sumber (`main.py` dan `transformation.py`), **tidak ditemukan kesalahan implementasi**. Pipeline dari *imbalanced-learn* sukses melindungi dataset dari *data leakage*, dan urutan transformasi berjalan sebagaimana mestinya (SMOTENC -> ColumnTransformer -> Decision Tree). Tidak ada perombakan besar yang perlu dilakukan.
+Decision Tree + RandomUnderSampler
+Distribusi training setelah RandomUnderSampler:
+False : 1526
+True  : 1526
 
-### 3. Hasil Audit Evaluasi Aktual (Decision Tree)
-Berikut adalah penjelasan dan verifikasi metrik (Positive Class = `True` / Membeli):
+Hasil evaluasi:
+Metrik	Nilai
+Accuracy	83,61%
+Precision	48,59%
+Recall	81,41%
+F1-Score	60,86%
 
-| Metrik | Model (SMOTENC) | Model (Undersampling) | Perbandingan & Interpretasi |
-| --- | --- | --- | --- |
-| **Akurasi** | 86.89% | 83.61% | SMOTENC secara umum menebak lebih banyak keseluruhan kelas dengan tepat. |
-| **Precision** | 56.20% | 48.59% | Dari semua data yang ditebak sebagai pembeli, SMOTENC jauh lebih akurat dibanding Undersampling. |
-| **Recall** | 73.56% | 81.41% | Undersampling lebih baik dalam menangkap jumlah pembeli secara absolut, meskipun sering keliru (*False Positives* tinggi). |
-| **F1-Score** | 63.72% | 60.86% | Secara harmonis (keseimbangan), performa SMOTENC lebih stabil. |
 
-*Kesimpulan:* Tidak ada metode tunggal yang sempurna. Jika bisnis ingin memastikan semua calon pembeli dirangkul (toleransi spam), *Undersampling* baik. Namun secara rasio F1 keseluruhan, **SMOTENC lebih direkomendasikan** untuk menjaga proporsi performa yang seimbang.
+Confusion Matrix:
+[[1730  329]
+ [  71  311]]
 
-### Cara Menjalankan
-Buka terminal (berada di *root workspace*) dan jalankan:
-```bash
-cd src
-python main.py
-```
+Perbandingan
+SMOTENC menghasilkan Accuracy, Precision, dan F1-Score yang lebih tinggi, sedangkan RandomUnderSampler menghasilkan Recall yang lebih tinggi.
+Dengan demikian, pada eksperimen ini SMOTENC memberikan performa yang lebih seimbang berdasarkan F1-Score dan Accuracy. Sementara itu, RandomUnderSampler lebih baik jika prioritas utama adalah menangkap sebanyak mungkin data dari kelas True atau pembeli.
+
+6. Cara Menjalankan
+Pastikan dependency pada requirements.txt telah terpasang, kemudian dari root repository jalankan:
+python src/main.py
+
+Hasil evaluasi akan disimpan pada:
+outputs/tables/evaluasi_model.csv
+
+Sedangkan grafik akan disimpan pada:
+outputs/figures/
