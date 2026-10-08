@@ -1,16 +1,24 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report
-import pandas as pd
-import os
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
 
 def evaluate_model(model_name, y_true, y_pred):
     print(f"\n--- Evaluasi {model_name} ---")
+    cm = confusion_matrix(y_true, y_pred, labels=[False, True])
     acc = accuracy_score(y_true, y_pred)
-    prec = precision_score(y_true, y_pred, pos_label=True)
-    rec = recall_score(y_true, y_pred, pos_label=True)
-    f1 = f1_score(y_true, y_pred, pos_label=True)
+    prec = precision_score(y_true, y_pred, pos_label=True, zero_division=0)
+    rec = recall_score(y_true, y_pred, pos_label=True, zero_division=0)
+    f1 = f1_score(y_true, y_pred, pos_label=True, zero_division=0)
     
+    print("Confusion Matrix (actual: rows, predicted: columns; [False, True]):")
+    print(cm)
     print(f"Accuracy: {acc:.4f}")
     print(f"Precision: {prec:.4f}")
     print(f"Recall: {rec:.4f}")
@@ -23,19 +31,22 @@ def evaluate_model(model_name, y_true, y_pred):
         'Accuracy': acc,
         'Precision': prec,
         'Recall': rec,
-        'F1-Score': f1
+        'F1-Score': f1,
     }
 
 def plot_confusion_matrix(y_true, y_pred, model_name, filepath):
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, labels=[False, True])
     plt.figure(figsize=(6,4))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
     plt.title(f'Confusion Matrix - {model_name}')
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
+    plt.xticks([0.5, 1.5], ['False', 'True'])
+    plt.yticks([0.5, 1.5], ['False', 'True'], rotation=0)
     plt.tight_layout()
     plt.savefig(filepath)
     plt.close()
+    return cm
 
 def plot_class_distribution(y, title, filepath):
     plt.figure(figsize=(6,4))
