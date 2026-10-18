@@ -233,4 +233,5 @@ python -m unittest discover tests
 
 ## 8. Keterbatasan Model & Catatan Praktis
 1. **Kompleksitas Komputasi SVM**: Pelatihan SVM dengan kernel RBF memiliki kompleksitas kuadratik terhadap ukuran sampel resample. Pada dataset dengan jutaan baris, disarankan menggunakan linear SVM atau subsampling.
-2. **Karakteristik Data Kunjungan**: Prediksi model didasarkan murni pada 17 fitur perilaku browsing pengguna. Faktor eksternal seperti harga promo diskon khusus, ketersediaan stok, atau kampanye pemasaran di luar sesi tidak terekam dalam dataset.
+2. **Karakteristik Data Kunjungan**: Prediksi model didasarkan murni pada 17 fitur perilaku browsing pengguna. Faktor eksternal seperti harga promo diskon khusus, ketersediaan stok, atau kampanye pemasaran di luar sesi tidak terekam dalam dataset.#   m l _ p r a k  
+ 
