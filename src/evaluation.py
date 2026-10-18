@@ -64,10 +64,12 @@ def plot_class_distribution(y, title, filepath):
 
 def plot_metrics_comparison(metrics_df, filepath):
     df_melt = metrics_df.melt(id_vars='Model', var_name='Metric', value_name='Score')
-    plt.figure(figsize=(10,6))
-    sns.barplot(x='Metric', y='Score', hue='Model', data=df_melt)
+    plt.figure(figsize=(12, 6))
+    ax = sns.barplot(x='Metric', y='Score', hue='Model', data=df_melt)
     plt.title('Perbandingan Metrik Evaluasi')
-    plt.ylim(0, 1.0)
+    plt.ylim(0, 1.05)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
     plt.tight_layout()
-    plt.savefig(filepath)
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.close()
+
