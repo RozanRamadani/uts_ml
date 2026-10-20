@@ -38,11 +38,14 @@ NAV_OPTIONS = [
 
 def main():
     # Inisialisasi state sesi
-    if "nav_choice" not in st.session_state or st.session_state.nav_choice not in NAV_OPTIONS:
-        st.session_state.nav_choice = NAV_OPTIONS[0]
+    if "nav_radio" not in st.session_state or st.session_state.nav_radio not in NAV_OPTIONS:
+        st.session_state.nav_radio = NAV_OPTIONS[0]
 
     if "form_data" not in st.session_state:
         st.session_state.form_data = get_default_form_data()
+
+    if "form_version" not in st.session_state:
+        st.session_state.form_version = 0
 
     if "prediction_result" not in st.session_state:
         st.session_state.prediction_result = None
@@ -60,18 +63,16 @@ def main():
     with st.sidebar:
         render_sidebar_branding()
 
-        # Dapatkan index navigasi saat ini
-        current_idx = NAV_OPTIONS.index(st.session_state.nav_choice)
+        # Navigasi Aplikasi dengan direct key binding untuk keandalan 1-klik
         selected_nav = st.radio(
             "Navigasi Aplikasi",
             options=NAV_OPTIONS,
-            index=current_idx,
+            key="nav_radio",
             label_visibility="collapsed",
         )
-        st.session_state.nav_choice = selected_nav
 
         st.markdown(
-            "<hr style='border: 0; border-top: 1px solid #E2E8F0; margin: 1.25rem 0;'>",
+            "<hr style='border: 0; border-top: 1px solid var(--sidebar-border); margin: 1.25rem 0;'>",
             unsafe_allow_html=True,
         )
 
@@ -90,24 +91,27 @@ def main():
             if st.button("🛍️ Niat Beli Tinggi", use_container_width=True, key="sb_btn_buyer"):
                 st.session_state.form_data = get_preset_data("buyer")
                 st.session_state.prediction_result = None
+                st.session_state.form_version = st.session_state.get("form_version", 0) + 1
                 st.toast("Preset Niat Beli Tinggi dimuat!", icon="🛍️")
                 st.rerun()
             if st.button("👀 Pengunjung Kasual", use_container_width=True, key="sb_btn_casual"):
                 st.session_state.form_data = get_preset_data("casual")
                 st.session_state.prediction_result = None
+                st.session_state.form_version = st.session_state.get("form_version", 0) + 1
                 st.toast("Preset Pengunjung Kasual dimuat!", icon="👀")
                 st.rerun()
             if st.button("🔄 Reset ke Standar", use_container_width=True, key="sb_btn_reset"):
                 st.session_state.form_data = get_preset_data("reset")
                 st.session_state.prediction_result = None
+                st.session_state.form_version = st.session_state.get("form_version", 0) + 1
                 st.toast("Formulir di-reset ke standar.", icon="🔄")
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown(
             """
-            <div style="margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid #F1F5F9; font-size: 0.75rem; color: #94A3B8; line-height: 1.5;">
-                <strong style="color: #64748B;">Praktikum ML TM8</strong><br>
+            <div style="margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--sidebar-border); font-size: 0.75rem; color: var(--text-muted); line-height: 1.5;">
+                <strong style="color: var(--text-sub);">Praktikum ML TM8</strong><br>
                 Engine: Scikit-Learn 1.6+<br>
                 Design: Kira-Inspired Edition
             </div>

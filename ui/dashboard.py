@@ -15,14 +15,14 @@ def render_dashboard(bundle, eval_df):
     st.markdown(
         """
         <div class="kira-hero">
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <span class="kira-badge kira-badge-violet" style="margin: 0;">✨ AI Visitor Intelligence</span>
                 <span class="kira-badge kira-badge-indigo" style="margin: 0;">Versi 2.0 (Kira Edition)</span>
             </div>
-            <h1 style="font-size: 2.25rem; font-weight: 800; color: #0F172A; margin: 0.75rem 0 0.5rem 0; line-height: 1.2;">
+            <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-main); margin: 0.75rem 0 0.5rem 0; line-height: 1.2;">
                 Selamat Datang di Purchase Intent Analytics
             </h1>
-            <p style="font-size: 1.05rem; color: #475569; margin: 0 0 1.25rem 0; line-height: 1.6; max-width: 820px;">
+            <p style="font-size: 1.05rem; color: var(--text-sub); margin: 0 0 1.25rem 0; line-height: 1.6; max-width: 820px;">
                 Aplikasi kecerdasan buatan untuk mengidentifikasi potensi niat belanja pengunjung website secara probabilistik. 
                 Dirancang ramah, intuitif, dan mudah dipahami untuk membantu pengambilan keputusan bisnis e-commerce.
             </p>
@@ -36,9 +36,9 @@ def render_dashboard(bundle, eval_df):
     with c_cta1:
         st.markdown(
             f"""
-            <div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 12px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 0.85rem 1.25rem; margin-bottom: 1.25rem;">
                 <span style="font-size: 1.4rem;">🎯</span>
-                <div style="font-size: 0.92rem; color: #334155;">
+                <div style="font-size: 0.92rem; color: var(--text-main);">
                     Model aktif <strong>{bundle['model_name']}</strong> siap melakukan estimasi probabilitas belanja untuk sesi pengunjung Anda.
                 </div>
             </div>
@@ -46,8 +46,8 @@ def render_dashboard(bundle, eval_df):
             unsafe_allow_html=True,
         )
     with c_cta2:
-        if st.button("🚀 Buka Prediction Workspace", use_container_width=True, type="primary"):
-            st.session_state.nav_choice = "🎯 Prediction Workspace"
+        if st.button("🚀 Buka Prediction Workspace", use_container_width=True, type="primary", key="dash_btn_goto_pred"):
+            st.session_state.nav_radio = "🎯 Prediction Workspace"
             st.rerun()
 
     # 4 Key Metric Cards
@@ -94,13 +94,13 @@ def render_dashboard(bundle, eval_df):
         st.markdown(
             """
             <div class="kira-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 8px;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0;">
                         📈 Benchmark Komparasi 6 Model
                     </h3>
                     <span class="kira-badge kira-badge-indigo" style="margin: 0;">2.441 Data Uji</span>
                 </div>
-                <p style="font-size: 0.88rem; color: #64748B; margin-bottom: 1rem; line-height: 1.5;">
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
                     Perbandingan metrik evaluasi pada data testing suci yang tidak pernah di-resampling (zero data leakage).
                 </p>
             </div>
@@ -111,13 +111,13 @@ def render_dashboard(bundle, eval_df):
         if eval_df is not None:
             df_melt = eval_df.melt(id_vars="Model", var_name="Metric", value_name="Score")
 
-            # Altair Chart dengan Palette Kira
+            # Altair Chart dengan Palette Kira dan label netral
             chart = (
                 alt.Chart(df_melt)
                 .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
                 .encode(
-                    x=alt.X("Metric:N", title=None, axis=alt.Axis(labelAngle=0, labelFontSize=12, labelFontWeight="bold")),
-                    y=alt.Y("Score:Q", title="Skor Metrik (0 - 1.0)", scale=alt.Scale(domain=[0, 1.05])),
+                    x=alt.X("Metric:N", title=None, axis=alt.Axis(labelAngle=0, labelFontSize=12, labelFontWeight="bold", labelColor="#94A3B8")),
+                    y=alt.Y("Score:Q", title="Skor Metrik (0 - 1.0)", scale=alt.Scale(domain=[0, 1.05]), axis=alt.Axis(labelColor="#94A3B8", titleColor="#94A3B8")),
                     color=alt.Color(
                         "Model:N",
                         scale=alt.Scale(
@@ -131,7 +131,7 @@ def render_dashboard(bundle, eval_df):
                             ],
                             range=["#94A3B8", "#64748B", "#F59E0B", "#D97706", "#4F46E5", "#06B6D4"],
                         ),
-                        legend=alt.Legend(title="Kombinasi Algoritma & Resampling", orient="bottom", columns=2),
+                        legend=alt.Legend(title="Kombinasi Algoritma & Resampling", orient="bottom", columns=2, labelColor="#94A3B8", titleColor="#94A3B8"),
                     ),
                     tooltip=[
                         alt.Tooltip("Model:N", title="Model"),
@@ -140,6 +140,7 @@ def render_dashboard(bundle, eval_df):
                     ],
                 )
                 .properties(height=340)
+                .configure_view(strokeOpacity=0)
             )
             st.altair_chart(chart, use_container_width=True)
 
@@ -147,36 +148,36 @@ def render_dashboard(bundle, eval_df):
         st.markdown(
             f"""
             <div class="kira-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 8px;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0;">
                         📚 Profil & Ringkasan Dataset
                     </h3>
                     <span class="kira-badge kira-badge-slate" style="margin: 0;">Dataset Riil</span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
-                        <span style="font-size: 0.88rem; color: #64748B;">Nama Dataset</span>
-                        <span style="font-size: 0.88rem; font-weight: 700; color: #0F172A;">{dataset_info['dataset_name']}</span>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">Nama Dataset</span>
+                        <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">{dataset_info['dataset_name']}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
-                        <span style="font-size: 0.88rem; color: #64748B;">Total Baris Bersih</span>
-                        <span style="font-size: 0.88rem; font-weight: 700; color: #0F172A;">{dataset_info['clean_rows']} baris <span style="font-size: 0.78rem; font-weight: normal; color: #94A3B8;">({dataset_info['duplicates_removed']} duplikat dibersihkan)</span></span>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">Total Baris Bersih</span>
+                        <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">{dataset_info['clean_rows']} baris <span style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">({dataset_info['duplicates_removed']} duplikat dibersihkan)</span></span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
-                        <span style="font-size: 0.88rem; color: #64748B;">Jumlah Fitur Input</span>
-                        <span style="font-size: 0.88rem; font-weight: 700; color: #0F172A;">{dataset_info['feature_count']} Fitur (10 Numerik + 7 Kategori/Diskrit)</span>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">Jumlah Fitur Input</span>
+                        <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">{dataset_info['feature_count']} Fitur (10 Numerik + 7 Kategori/Diskrit)</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
-                        <span style="font-size: 0.88rem; color: #64748B;">Pembagian Data Uji</span>
-                        <span style="font-size: 0.88rem; font-weight: 700; color: #0F172A;">{dataset_info['train_ratio']} Latih &bull; {dataset_info['test_ratio']} Uji ({dataset_info['test_rows']} baris)</span>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">Pembagian Data Uji</span>
+                        <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">{dataset_info['train_ratio']} Latih &bull; {dataset_info['test_ratio']} Uji ({dataset_info['test_rows']} baris)</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem;">
-                        <span style="font-size: 0.88rem; color: #64748B;">Distribusi Kelas Target</span>
-                        <span style="font-size: 0.88rem; font-weight: 700; color: #0F172A;">{dataset_info['class_true_pct']:.2f}% True : {dataset_info['class_false_pct']:.2f}% False</span>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">Distribusi Kelas Target</span>
+                        <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">{dataset_info['class_true_pct']:.2f}% True : {dataset_info['class_false_pct']:.2f}% False</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size: 0.88rem; color: #64748B;">Model Produksi Terpilih</span>
-                        <span style="font-size: 0.88rem; font-weight: 800; color: #4F46E5;">{bundle['model_name']}</span>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">Model Produksi Terpilih</span>
+                        <span style="font-size: 0.88rem; font-weight: 800; color: var(--accent-indigo);">{bundle['model_name']}</span>
                     </div>
                 </div>
             </div>
@@ -188,4 +189,5 @@ def render_dashboard(bundle, eval_df):
             "💡 **Prinsip Validitas Ilmiah**: Seluruh metrik evaluasi dihitung secara independen dari 2.441 sampel data testing asli "
             "tanpa kebocoran data. Model memprediksi secara probabilistik berdasarkan pola browsing pengunjung."
         )
+
 
